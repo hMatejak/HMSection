@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Version>1.0</Version>
+    <Title>HMSection</Title>
+    <Description>Description of HMSection</Description>
+    <TargetExt>.gha</TargetExt>
+  </PropertyGroup>
+	
+  <ItemGroup>
+    <None Remove="Resources\contour.png" />
+    <None Remove="Resources\hole.png" />
+    <None Remove="Resources\main.png" />
+    <None Remove="Resources\material.png" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\contour.png" />
+    <EmbeddedResource Include="Resources\hole.png" />
+    <EmbeddedResource Include="Resources\main.png" />
+    <EmbeddedResource Include="Resources\material.png" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="7.13.21348.13001" IncludeAssets="compile;build" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Reference Include="CrossSection.Net">
+      <HintPath>..\..\..\CrossSection.Net-master\src\CrossSection\bin\Debug\netstandard2.0\CrossSection.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics">
+      <HintPath>..\..\..\CrossSection.Net-master\src\libs\MathNet.Numerics.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\CrossSection.Net-master\src\libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="TriangleNet">
+      <HintPath>..\..\..\CrossSection.Net-master\src\libs\TriangleNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
