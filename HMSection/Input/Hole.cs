@@ -12,6 +12,7 @@ using Grasshopper.Kernel.Types;
 using Rhino.Geometry.Intersect;
 using Rhino;
 using Rhino.DocObjects;
+using HMSection.Utils;
 
 namespace HMSection.Input
 {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HMSection
+namespace HMSection.Utils
 {
     public static class VerticesTrans
     {
