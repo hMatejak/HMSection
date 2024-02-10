@@ -75,10 +75,10 @@ namespace HMSection.Output
             DA.SetData("Shear factor", sectionProperties.Delta_s);
 
             //shear center output
-            Point3d sc_e = new Point3d(sectionProperties.x_se, sectionProperties.y_se, 0.0);
+            Point3d sc_e = new Point3d(sectionProperties.cx - sectionProperties.x_se, sectionProperties.cy - sectionProperties.y_se, 0.0);
             DA.SetData("Shear center - elastic", sc_e);
             //shear center output
-            Point3d sc_t = new Point3d(sectionProperties.x_st, sectionProperties.y_st, 0.0);
+            Point3d sc_t = new Point3d(sectionProperties.cx - sectionProperties.x_st, sectionProperties.cy - sectionProperties.y_st, 0.0);
             DA.SetData("Shear center - Trefftz", sc_t);
 
             DA.SetData("Warping constant", sectionProperties.gamma);

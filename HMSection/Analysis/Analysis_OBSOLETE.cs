@@ -18,15 +18,14 @@ using Rhino.Geometry;
 using System.Linq;
 using System.Drawing;
 using HMSection.Input;
-using System.Reflection;
 
 namespace HMSection.Analysis
 {
-    public class Analysis : GH_Component
+    public class Analysis_OBSOLETE : GH_Component
     {
 
-        public Analysis()
-          : base("HMSec - Analysis", "HMA",
+        public Analysis_OBSOLETE()
+          : base("Analysis", "HMA",
             "Analyses inputed section",
             "HMSection", "02-Analysis")
         {
@@ -34,7 +33,7 @@ namespace HMSection.Analysis
 
         protected override System.Drawing.Bitmap Icon => Properties.Resources.analysis;   
 
-        public override Guid ComponentGuid => new Guid("629ee77e-625e-4610-b142-59fa9ba17768");
+        public override Guid ComponentGuid => new Guid("6456fb97-626b-40c1-b02b-82f6f732d07c");
 
 
         /// <summary>
@@ -43,7 +42,7 @@ namespace HMSection.Analysis
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddBooleanParameter("Run", "R", "Toggle to run", GH_ParamAccess.item, false);
-            pManager.AddGenericParameter("Contours", "C", "Contours of section", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Contour", "C", "Contour of section", GH_ParamAccess.item);
             pManager.AddGenericParameter("Holes", "H", "Holes in section", GH_ParamAccess.list);
             pManager[2].Optional = true;
             pManager.AddGenericParameter("Settings", "S", "Analysis settings", GH_ParamAccess.item);
@@ -79,10 +78,7 @@ namespace HMSection.Analysis
 
         List<Rhino.Geometry.Curve> borders = new List<Rhino.Geometry.Curve>();
 
-        Dictionary<int, List<Rhino.Geometry.Curve>> bordersDict = new Dictionary<int, List<Rhino.Geometry.Curve>>();
-
         List<Rhino.Geometry.Curve> holeBorders = new List<Rhino.Geometry.Curve>();
-
 
         /// <summary>
         /// This is the method that actually does the work.
@@ -97,17 +93,16 @@ namespace HMSection.Analysis
             //change message under the coponent
             Message = "Not Calculated";
 
-            bordersDict.Clear();
-
             //unpack settings corectly and cast them
             Grasshopper.Kernel.Types.GH_ObjectWrapper set = new Grasshopper.Kernel.Types.GH_ObjectWrapper();
             DA.GetData(3, ref set);
             SolutionSettings settings = set.Value as SolutionSettings;
 
             //unpack contour
-            List<SectionContour> contours = new List<SectionContour>();
-            DA.GetDataList(1, contours);
-            if ((contours == null) | (contours.Count == 0))
+            Grasshopper.Kernel.Types.GH_ObjectWrapper con = new Grasshopper.Kernel.Types.GH_ObjectWrapper();
+            DA.GetData(1, ref con);
+            SectionContour contour = con.Value as SectionContour;
+            if (contour == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Contour is not valid!");
                 return;
@@ -120,8 +115,9 @@ namespace HMSection.Analysis
             DA.GetDataList(2, holes);
 
             //display section as brep
-            this.CollectCurvesForBrep(contours); 
+            this.CollectCurvesForBrep(contour);
             this.CollectHolesForBrep(holes);
+
 
             //main analysis funtion
             bool run = new bool();
@@ -142,10 +138,7 @@ namespace HMSection.Analysis
                 sec.Contours.Clear();
 
                 //adding contours
-                foreach (SectionContour contour in contours)
-                {
-                    sec.Contours.Add(contour);
-                }
+                sec.Contours.Add(contour);
 
                 //adding holes
                 if (!(holes.Count == 0))
@@ -171,110 +164,53 @@ namespace HMSection.Analysis
             {
                 Message = "Calculated!";
             }
+
         }
 
-        /// <summary>
-        /// Draws breps in Rhino view that represent the section.
-        /// </summary>
-        /// <param name="args"></param>
         public override void DrawViewportMeshes(IGH_PreviewArgs args)
         {
             base.DrawViewportMeshes(args);
 
             Rhino.Geometry.Brep[] breps = new Brep[0];
 
-            List<Rhino.Geometry.Brep> borderBrep = new List<Brep>();
             foreach (var border in borders)
             {
-                borderBrep.AddRange(Rhino.Geometry.Brep.CreatePlanarBreps(border, 0.01).ToList());
+                breps = Rhino.Geometry.Brep.CreatePlanarBreps(border, 0.001);
             }
+
 
             List<Rhino.Geometry.Brep> brepsHoles = new List<Brep>();
             foreach (var hole in holeBorders)
             {
-                brepsHoles.AddRange( Rhino.Geometry.Brep.CreatePlanarBreps(hole, 0.01).ToList() );
+                brepsHoles.AddRange( Rhino.Geometry.Brep.CreatePlanarBreps(hole, 0.001).ToList() );
             }
 
-
-            Dictionary<int, Rhino.Geometry.Brep[]> brepDict = new Dictionary<int, Brep[]>();
-            foreach (var brep in bordersDict)
+            if ((brepsHoles.Count > 0)) 
             {
-                brepDict.Add(brep.Key, Rhino.Geometry.Brep.CreatePlanarBreps(brep.Value, 0.001));
+                breps = Rhino.Geometry.Brep.CreateBooleanDifference(breps, brepsHoles, 0.001);  
             }
 
-            Dictionary<int, Rhino.Geometry.Brep[]> brepDictHoles = new Dictionary<int, Brep[]>();
-            foreach (var brepPair in brepDict)
+            foreach (Rhino.Geometry.Brep brep in breps)
             {
-                if (Rhino.Geometry.Brep.CreateBooleanDifference(brepPair.Value, brepsHoles, 0.001).Length == 0)
-                {
-                    brepDictHoles.Add(brepPair.Key, brepPair.Value);
-                }
-                else
-                {
-                    brepDictHoles.Add(brepPair.Key, Rhino.Geometry.Brep.CreateBooleanDifference(brepPair.Value, brepsHoles, 0.001));
-                }
-
+                args.Display.DrawBrepShaded(brep, new Rhino.Display.DisplayMaterial(System.Drawing.Color.FromKnownColor(KnownColor.Aqua), 0.7));
             }
 
-
-            //generate list of colors
-            List<Color> colorList = Utils.Colors.ColorStructToList();
-            colorList.Reverse();
-            int colorID = new int();
-
-            foreach (var brepAr in brepDictHoles)
-            {
-                foreach (var brep in brepAr.Value) 
-                {
-                    if (brepAr.Key > colorList.Count)
-                    {
-                        int colorId = colorList.Count -1;
-                    }
-                    else { colorID = brepAr.Key; }
-                    args.Display.DrawBrepShaded(brep, new Rhino.Display.DisplayMaterial(colorList[colorID],0.6));
-                }
-            }
         }
 
-        protected void CollectCurvesForBrep(List<SectionContour> contours)
+        protected void CollectCurvesForBrep(SectionContour contour)
         {
-            foreach (SectionContour contour in contours)
+            List<Point2D> points = contour.Points;
+            List<Rhino.Geometry.Point3d> points3d = new List<Rhino.Geometry.Point3d>();
+
+            foreach (var point in points)
             {
-                if (contour.Points.Count > 0 )
-                {
-                    List<Point2D> points = contour.Points;
-                    List<Rhino.Geometry.Point3d> points3d = new List<Rhino.Geometry.Point3d>();
-
-                    foreach (var point in points)
-                    {
-                        points3d.Add(new Rhino.Geometry.Point3d(point.X, point.Y, 0));
-                    }
-                    points3d.Add(new Rhino.Geometry.Point3d(points[0].X, points[0].Y, 0));
-
-                    Rhino.Geometry.Curve border = Curve.CreateInterpolatedCurve(points3d, 1);
-
-                    ////test for orientation
-                    CurveOrientation orientation = border.ClosedCurveOrientation();
-                    if (orientation == CurveOrientation.Clockwise)
-                    {
-                        border.Reverse();
-                    }
-                    borders.Add(border);
-
-                    int matID = contour.Material.Id;
-
-                    if (!bordersDict.ContainsKey(matID))
-                    {
-                        List<Rhino.Geometry.Curve> newmat_id_list= new List<Rhino.Geometry.Curve>();
-                        newmat_id_list.Add(border);
-                        bordersDict.Add(matID, newmat_id_list);
-                    }
-                    else
-                    {
-                        bordersDict[matID].Add(border);
-                    }
-                }
+                points3d.Add(new Rhino.Geometry.Point3d(point.X, point.Y, 0));
             }
+            points3d.Add(new Rhino.Geometry.Point3d(points[0].X, points[0].Y, 0));
+
+            Rhino.Geometry.Curve border = Curve.CreateInterpolatedCurve(points3d, 1);
+ 
+            borders.Add(border);
         }
 
         protected void CollectHolesForBrep(List<SectionContour> holes)
@@ -292,15 +228,9 @@ namespace HMSection.Analysis
 
                 Rhino.Geometry.Curve holeBorder = Curve.CreateInterpolatedCurve(points3d, 1);
 
-                ////test for orientation
-                CurveOrientation orientation = holeBorder.ClosedCurveOrientation();
-                if (orientation == CurveOrientation.Clockwise)
-                {
-                    holeBorder.Reverse();
-                }
-
                 holeBorders.Add(holeBorder);
             }
+        
         }
     }
 }
