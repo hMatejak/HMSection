@@ -140,7 +140,7 @@ namespace HMSection.Output
             DA.SetData("Radius of gyration rx", sectionProperties.rx_c);
             DA.SetData("Radius of gyration ry", sectionProperties.ry_c);
             DA.SetData("Second moment about 11-axis", sectionProperties.i11_c);
-            DA.SetData("Second moment about 11-axis", sectionProperties.i11_c);
+            DA.SetData("Second moment about 22-axis", sectionProperties.i22_c);
             DA.SetData("Principal axis angle", sectionProperties.phi);
             DA.SetData("Section modulus about 11-axis plus", sectionProperties.z11_plus);
             DA.SetData("Section modulus about 11-axis minus", sectionProperties.z11_minus);
