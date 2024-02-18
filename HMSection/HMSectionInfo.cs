@@ -49,6 +49,6 @@ namespace HMSection
         //Return a string representing your preferred contact details.
         public override string AuthorContact => "honza.m46@gmail.com";
 
-        public override string AssemblyVersion => "0.5.0";
+        public override string AssemblyVersion => "0.6.0";
     }
 }

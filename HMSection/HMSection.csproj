@@ -6,6 +6,7 @@
     <Title>HMSection</Title>
     <Description>Description of HMSection</Description>
     <TargetExt>.gha</TargetExt>
+    <Configurations>Debug;Release;release_0.6.0</Configurations>
   </PropertyGroup>
 	
   <ItemGroup>

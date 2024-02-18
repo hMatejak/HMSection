@@ -38,19 +38,19 @@ using Rhino;
 
 namespace HMSection.Input
 {
-    public class Material : GH_Component
+    public class Material_OBSOLETE : GH_Component
     {
 
-        public Material()
+        public Material_OBSOLETE()
           : base("HMsec - Material", "M", "Material of section", "HMSection", "01-Input")
         {
         }
 
         protected override System.Drawing.Bitmap Icon => Properties.Resources.material;
 
-        public override Guid ComponentGuid => new Guid("f4531f25-33f9-4bc2-b931-89b607b7f064");
+        public override Guid ComponentGuid => new Guid("40b80d9a-2609-4dce-b169-0d626a2ba484");
 
-        public override GH_Exposure Exposure => GH_Exposure.secondary;
+        public override GH_Exposure Exposure => GH_Exposure.hidden;
 
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace HMSection.Input
         {
             pManager.AddTextParameter("Name", "N", "Name of material", GH_ParamAccess.item, "Default");
             pManager.AddIntegerParameter("Id", "I", "Id of material", GH_ParamAccess.item, 1);
-            //pManager.AddNumberParameter("E", "E", "Elastic modulus", GH_ParamAccess.item, 1.0);
+            pManager.AddNumberParameter("E", "E", "Elastic modulus", GH_ParamAccess.item, 1.0);
             pManager.AddNumberParameter("v", "V", "Poissons ratio", GH_ParamAccess.item, 0.0);
             pManager.AddNumberParameter("s", "S", "Yield strength", GH_ParamAccess.item, 1.0);
         }
@@ -78,15 +78,15 @@ namespace HMSection.Input
         {
             string name = string.Empty;
             int matid = 0;
-            double E = 1;
+            double E = 0;
             double v = 0;
             double s = 0;
 
             DA.GetData(0, ref name);
             DA.GetData(1, ref matid);
-            //DA.GetData(2, ref E);
-            DA.GetData("v", ref v);
-            DA.GetData("s", ref s);
+            DA.GetData(2, ref E);
+            DA.GetData(3, ref v);
+            DA.GetData(4, ref s);
 
             SectionMaterial mat = new SectionMaterial(name, id: matid, elastic_modulus: E, poissons_ratio: v, yield_strength: s);
 
